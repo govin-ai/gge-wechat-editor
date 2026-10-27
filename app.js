@@ -567,7 +567,6 @@ const editorApp = createApp({
       renderedContent: '',
       currentStyle: 'gge-style',
       copySuccess: false,
-      starredStyles: [],
       includeGif: true,  // 复制时是否包含 GIF（默认包含；关闭则替换为占位提示）
       hasGif: false,     // 当前内容是否含 GIF（仅此时显示「含 GIF」开关）
       toast: {
@@ -596,9 +595,6 @@ const editorApp = createApp({
   },
 
   async mounted() {
-    // 加载星标样式
-    this.loadStarredStyles();
-
     // 加载「含 GIF」开关偏好
     this.loadIncludeGif();
 
@@ -714,19 +710,6 @@ const editorApp = createApp({
   },
 
   methods: {
-    loadStarredStyles() {
-      try {
-        const saved = localStorage.getItem('starredStyles');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          this.starredStyles = Array.isArray(parsed) ? parsed.filter(k => STYLES[k]) : [];
-        }
-      } catch (error) {
-        console.error('加载星标样式失败:', error);
-        this.starredStyles = [];
-      }
-    },
-
     loadIncludeGif() {
       try {
         const saved = localStorage.getItem('includeGif');
@@ -2078,39 +2061,10 @@ const markdown = \`![图片](img://\${imageId})\`;
       return null;
     },
 
-    isStyleStarred(styleKey) {
-      return this.starredStyles.includes(styleKey);
-    },
-
     isRecommended(styleKey) {
       // 推荐的样式
       const recommended = ['gge-style', 'gov-red', 'business-navy', 'ink-wash', 'github-docs'];
       return recommended.includes(styleKey);
-    },
-
-    toggleStarStyle(styleKey) {
-      const index = this.starredStyles.indexOf(styleKey);
-      if (index > -1) {
-        this.starredStyles.splice(index, 1);
-        this.showToast('已取消收藏', 'success');
-      } else {
-        this.starredStyles.push(styleKey);
-        this.showToast('已收藏样式', 'success');
-      }
-      this.saveStarredStyles();
-    },
-
-    saveStarredStyles() {
-      try {
-        localStorage.setItem('starredStyles', JSON.stringify(this.starredStyles));
-      } catch (error) {
-        console.error('保存星标样式失败:', error);
-      }
-    },
-
-    getStyleName(styleKey) {
-      const style = STYLES[styleKey];
-      return style ? style.name : styleKey;
     },
 
     showToast(message, type = 'success') {
