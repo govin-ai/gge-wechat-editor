@@ -590,7 +590,9 @@ const editorApp = createApp({
       // 文章历史记录
       articleHistory: [],           // 历史文章列表
       showHistoryPanel: false,      // 侧边栏显示状态
-      currentArticleId: null        // 当前编辑的文章ID（用于防止重复保存）
+      currentArticleId: null,       // 当前编辑的文章ID（用于防止重复保存）
+      importBusy: false,
+      importOptions: []             // Notion ZIP 包含多篇文章时供用户选择
     };
   },
 
@@ -879,21 +881,187 @@ const markdown = \`![图片](img://\${imageId})\`;
 合作/咨询见 [ggelabs.com](https://ggelabs.com/)`;
     },
 
-    handleFileUpload(event) {
+    async handleFileUpload(event) {
       const file = event.target.files[0];
+      event.target.value = '';
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.markdownInput = e.target.result;
-      };
-      reader.onerror = () => {
-        this.showToast('文件读取失败', 'error');
-      };
-      reader.readAsText(file);
+      if (file.size > 25 * 1024 * 1024) {
+        this.showToast('文件不能超过 25MB', 'error');
+        return;
+      }
 
-      // 清空 input，允许重复上传同一文件
-      event.target.value = '';
+      this.importBusy = true;
+      this.importOptions = [];
+      this._importZip = null;
+      try {
+        const extension = file.name.split('.').pop().toLowerCase();
+        let markdown;
+        if (extension === 'md' || extension === 'markdown') {
+          markdown = await file.text();
+        } else if (extension === 'docx') {
+          markdown = await this.importWordDocument(file);
+        } else if (extension === 'zip') {
+          await this.openNotionExport(file);
+          return;
+        } else {
+          throw new Error('仅支持 MD、DOCX 和 Notion ZIP 文件');
+        }
+        this.finishFileImport(markdown);
+      } catch (error) {
+        console.error('导入文件失败:', error);
+        this.showToast('导入失败：' + error.message, 'error');
+      } finally {
+        this.importBusy = false;
+      }
+    },
+
+    finishFileImport(markdown, missingImages = 0) {
+      if (!markdown || !markdown.trim()) throw new Error('文件中没有可导入的正文');
+      this.currentArticleId = null;
+      this.markdownInput = markdown;
+      this.showToast(missingImages
+        ? `正文已导入，${missingImages} 张图片未找到`
+        : '文件已导入，可以预览和编辑', missingImages ? 'warning' : 'success');
+    },
+
+    async storeImportedImage(blob, name) {
+      const supported = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'];
+      if (!supported.includes(blob.type)) throw new Error(`不支持图片格式：${blob.type || name}`);
+      if (blob.size > 10 * 1024 * 1024) throw new Error('文档中的单张图片不能超过 10MB');
+      if (!this.imageStore || !this.imageCompressor) throw new Error('图片存储尚未准备好');
+
+      const compressed = await this.imageCompressor.compress(blob);
+      const imageId = `img-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+      await this.imageStore.saveImage(imageId, compressed, {
+        name, originalName: name, originalSize: blob.size,
+        compressedSize: compressed.size, mimeType: compressed.type || blob.type
+      });
+      return `img://${imageId}`;
+    },
+
+    async importWordDocument(file) {
+      await this.loadScriptOnce('vendor/mammoth.browser.min.js');
+      if (typeof mammoth === 'undefined') throw new Error('Word 解析库加载失败');
+      const source = await file.arrayBuffer();
+      let imageCount = 0;
+      let result;
+      try {
+        result = await mammoth.convertToHtml({ arrayBuffer: source }, {
+          convertImage: mammoth.images.imgElement(async image => {
+            const blob = new Blob([await image.readAsArrayBuffer()], { type: image.contentType });
+            const src = await this.storeImportedImage(blob, `Word图片${++imageCount}`);
+            return { src };
+          })
+        });
+      } catch (error) {
+        if (/图片|image|IndexedDB/i.test(error.message)) throw error;
+        throw new Error('DOCX 文件无效或已损坏');
+      }
+      if (!(await this.ensureTurndown())) throw new Error('格式转换库加载失败');
+      const markdown = this.turndownService.turndown(result.value);
+      if (!markdown.trim()) throw new Error('Word 文件中没有可导入的正文');
+      return markdown;
+    },
+
+    async openNotionExport(file) {
+      await this.loadScriptOnce('vendor/jszip.min.js');
+      if (typeof JSZip === 'undefined') throw new Error('ZIP 解析库加载失败');
+      let zip;
+      try {
+        zip = await JSZip.loadAsync(file);
+      } catch (_) {
+        throw new Error('ZIP 文件无效或已损坏');
+      }
+      const pages = Object.values(zip.files)
+        .filter(entry => !entry.dir && /\.md$/i.test(entry.name) && !entry.name.startsWith('__MACOSX/'))
+        .map(entry => entry.name)
+        .sort((a, b) => a.split('/').length - b.split('/').length || a.localeCompare(b));
+      if (!pages.length) throw new Error('ZIP 中没有 Markdown 页面；请选择 Notion 导出的 ZIP');
+      if (pages.length > 100) throw new Error('ZIP 页面超过 100 篇，请分别导出');
+
+      this._importZip = zip;
+      if (pages.length === 1) {
+        try {
+          const result = await this.readNotionPage(pages[0]);
+          this.finishFileImport(result.markdown, result.missingImages);
+        } finally {
+          this._importZip = null;
+        }
+      } else {
+        this.importOptions = pages;
+        this.$nextTick(() => this.$refs.importFirstPage?.focus());
+      }
+    },
+
+    async selectNotionPage(path) {
+      if (this.importBusy || !this._importZip || !this.importOptions.includes(path)) return;
+      this.importBusy = true;
+      try {
+        const result = await this.readNotionPage(path);
+        this.finishFileImport(result.markdown, result.missingImages);
+        this.cancelNotionImport();
+      } catch (error) {
+        console.error('导入 Notion 页面失败:', error);
+        this.showToast('导入失败：' + error.message, 'error');
+      } finally {
+        this.importBusy = false;
+      }
+    },
+
+    cancelNotionImport() {
+      this.importOptions = [];
+      this._importZip = null;
+    },
+
+    resolveNotionAsset(pagePath, link) {
+      const raw = link.replace(/^<|>$/g, '').split(/[?#]/)[0];
+      if (/^[a-z][a-z\d+.-]*:/i.test(raw) || raw.startsWith('/')) return null;
+      let decoded;
+      try { decoded = decodeURIComponent(raw); } catch (_) { decoded = raw; }
+      const segments = pagePath.split('/').slice(0, -1);
+      for (const part of decoded.replace(/\\/g, '/').split('/')) {
+        if (!part || part === '.') continue;
+        if (part === '..') {
+          if (!segments.length) return null;
+          segments.pop();
+        } else {
+          segments.push(part);
+        }
+      }
+      return segments.join('/');
+    },
+
+    async readNotionPage(path) {
+      const zip = this._importZip;
+      const page = zip && zip.file(path);
+      if (!page) throw new Error('找不到所选的 Notion 页面');
+      let markdown = await page.async('string');
+      if (markdown.length > 5 * 1024 * 1024) throw new Error('页面正文不能超过 5MB');
+
+      const imagePattern = /!\[([^\]]*)\]\((<[^>]+>|[^\s)]+)(?:\s+"[^"]*")?\)/g;
+      const matches = [...markdown.matchAll(imagePattern)];
+      if (matches.length > 50) throw new Error('单篇文章最多导入 50 张图片');
+      const imported = new Map();
+      let missingImages = 0;
+      for (const match of matches) {
+        const assetPath = this.resolveNotionAsset(path, match[2]);
+        if (!assetPath) continue; // 网络图片链接保持原样
+        const entry = zip.file(assetPath);
+        if (!entry || !/\.(png|jpe?g|webp|gif|svg)$/i.test(assetPath)) {
+          missingImages++;
+          continue;
+        }
+        if (!imported.has(assetPath)) {
+          const extension = assetPath.split('.').pop().toLowerCase();
+          const mime = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+            webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml' }[extension];
+          const blob = new Blob([await entry.async('arraybuffer')], { type: mime });
+          imported.set(assetPath, await this.storeImportedImage(blob, assetPath.split('/').pop()));
+        }
+        markdown = markdown.replace(match[0], `![${match[1]}](${imported.get(assetPath)})`);
+      }
+      return { markdown, missingImages };
     },
 
     async renderMarkdown() {
@@ -2201,7 +2369,7 @@ const markdown = \`![图片](img://\${imageId})\`;
       if (this.turndownService) return true;
       if (typeof TurndownService === 'undefined') {
         try {
-          await this.loadScriptOnce('https://cdn.jsdelivr.net/npm/turndown@7.2.0/dist/turndown.js');
+          await this.loadScriptOnce('vendor/turndown.js');
         } catch (e) {
           console.warn('按需加载 turndown 失败:', e);
           return false;
@@ -2282,7 +2450,7 @@ const markdown = \`![图片](img://\${imageId})\`;
         filter: 'img',
         replacement: (_content, node) => {
           const alt = node.alt || '图片';
-          const src = node.src || '';
+          const src = node.getAttribute('src') || node.src || '';
           const title = node.title || '';
 
           // 处理 base64 图片（截取前30个字符作为标识）

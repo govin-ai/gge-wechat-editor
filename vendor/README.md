@@ -1,14 +1,16 @@
 # vendor/ 第三方库自建说明
 
-这两个文件是从 CDN 搬到同源自建的（性能优化第 2 步，见项目根目录的
-`实验日志.md`）。版本号跟线上 `master` 分支当时用的版本**完全一致**，只是换了
-托管位置，没有升级/降级任何版本。以后要升级版本时手动重新下载 + 更新这份
-README，这个项目没有引入构建流程。
+Markdown 渲染和 Vue 的两个文件原本从 CDN 搬到同源自建，版本保持不变。
+导入功能新增了按需加载的 Mammoth、JSZip；Turndown 也改为同源自建，
+版本仍为 7.2.0。项目没有构建流程，升级时需更新文件和下表。
 
 | 文件 | 版本 | 来源 URL（下载时用的这个） |
 |---|---|---|
 | `markdown-it.min.js` | 14.0.0 | `https://cdn.jsdelivr.net/npm/markdown-it@14.0.0/dist/markdown-it.min.js` |
 | `vue.global.prod.js` | 3.4.15 | `https://cdn.jsdelivr.net/npm/vue@3.4.15/dist/vue.global.prod.js` |
+| `turndown.js` | 7.2.0 | npm 官方包 `turndown@7.2.0` 中的 `dist/turndown.js`，按需加载 |
+| `mammoth.browser.min.js` | 1.13.0 | npm 官方包 `mammoth@1.13.0` 中的浏览器构建，按需加载 |
+| `jszip.min.js` | 3.10.2 | npm 官方包 `jszip@3.10.2` 中的 `dist/jszip.min.js`，按需加载 |
 
 ## highlight.js 的 CSS + JS 没有出现在这里——不是漏掉，是删掉了
 

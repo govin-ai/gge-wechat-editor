@@ -38,7 +38,7 @@
 - 实时预览、一键复制到公众号
 - 从飞书、Notion、Word 等富文本粘贴自动转 Markdown
 - 文章历史记录，保留最近 3 篇
-- 支持 .md / .markdown 文件上传
+- 统一导入入口：支持 .md / .markdown（含飞书、Notion 导出）、Word .docx、Notion Markdown ZIP（多页面可选择一篇）
 - 响应式设计，适配桌面、平板、手机
 
 ## 📖 使用

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>G哥公众号排版 - 免费微信公众号 Markdown 排版工具</title>
-  <meta name="description" content="G哥公众号排版：在线把 Markdown 排成好看的微信公众号文章。13 套样式实时预览，支持飞书、Notion、Word 粘贴和图片拖入，一键复制到公众号后台，免费免登录。">
+  <meta name="description" content="G哥公众号排版：在线把 Markdown 排成好看的微信公众号文章。13 套样式实时预览，支持 Markdown、飞书导出、Notion ZIP 和 Word DOCX 文件导入，一键复制到公众号后台，免费免登录。">
   <link rel="canonical" href="https://mp.ggelabs.com/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="G哥公众号排版">
@@ -106,7 +106,7 @@
       "name": "支持哪些 Markdown 写法？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "常用的都支持：各级标题、加粗、斜体、链接、有序和无序列表、引用、代码块、表格、分割线和图片。也可以上传 .md 文件直接排版。"
+        "text": "常用的都支持：各级标题、加粗、斜体、链接、有序和无序列表、引用、代码块、表格、分割线和图片。也可以导入 .md、Word .docx、Notion Markdown ZIP 文件。"
       }
     },
     {
@@ -476,6 +476,55 @@
       background: var(--color-surface);
       border-color: var(--color-accent);
       color: var(--color-accent);
+    }
+
+    .upload-label:has(input:disabled) { opacity: 0.55; cursor: wait; }
+
+    .import-picker-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1100;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(5, 3, 15, 0.62);
+    }
+    .import-picker {
+      width: min(100%, 520px);
+      max-height: min(78vh, 620px);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      background: var(--color-surface);
+      box-shadow: 0 24px 70px rgba(5, 3, 15, 0.3);
+    }
+    .import-picker h2 { margin: 0 0 6px; font-size: 20px; }
+    .import-picker p { margin: 0 0 16px; color: var(--color-secondary); font-size: 14px; }
+    .import-picker-list { display: grid; gap: 8px; overflow: auto; }
+    .import-picker-list button {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--color-border);
+      border-radius: 9px;
+      background: var(--color-bg);
+      color: var(--color-primary);
+      text-align: left;
+      overflow-wrap: anywhere;
+      cursor: pointer;
+    }
+    .import-picker-list button:hover { border-color: var(--color-accent); background: var(--color-accent-soft); }
+    .import-picker-list button:disabled { opacity: 0.55; cursor: wait; }
+    .import-picker-cancel {
+      align-self: flex-end;
+      margin-top: 16px;
+      padding: 8px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+      cursor: pointer;
     }
 
     .upload-hints {
@@ -1643,11 +1692,11 @@
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
-              <span>上传 MD 文件</span>
-              <input type="file" id="file-upload" accept=".md,.markdown" @change="handleFileUpload" style="display: none;">
+              <span>{{ importBusy ? '导入中…' : '导入文件' }}</span>
+              <input type="file" id="file-upload" accept=".md,.markdown,.docx,.zip" :disabled="importBusy" @change="handleFileUpload" style="display: none;">
             </label>
             <div class="upload-hints">
-              <span class="upload-hint" title="也支持从飞书、Notion、Word 粘贴内容">支持 .md / .markdown</span>
+              <span class="upload-hint" title="飞书导出 Markdown；Notion 导出 Markdown 或 ZIP；Word 使用 DOCX">MD / DOCX / Notion ZIP</span>
             </div>
           </div>
           <div class="char-count">
@@ -1888,6 +1937,17 @@
     <!-- 侧边栏遮罩层 -->
     <div class="history-overlay" :class="{ visible: showHistoryPanel }" @click="toggleHistoryPanel"></div>
 
+    <div v-if="importOptions.length" class="import-picker-overlay" @keydown.esc="cancelNotionImport">
+      <section class="import-picker" role="dialog" aria-modal="true" aria-labelledby="import-picker-title">
+        <h2 id="import-picker-title">选择要导入的 Notion 页面</h2>
+        <p>压缩包中有 {{ importOptions.length }} 篇页面，本次导入其中一篇</p>
+        <div class="import-picker-list">
+          <button v-for="(path, index) in importOptions" :key="path" :ref="index === 0 ? 'importFirstPage' : null" type="button" :disabled="importBusy" @click="selectNotionPage(path)">{{ path }}</button>
+        </div>
+        <button type="button" class="import-picker-cancel" :disabled="importBusy" @click="cancelNotionImport">取消</button>
+      </section>
+    </div>
+
     <!-- Toast 提示 -->
     <div v-if="toast.show" class="toast" :class="toast.type">
       {{ toast.message }}
@@ -1910,7 +1970,7 @@
       <ul>
         <li>13 套排版样式，默认是 G哥风，另有政务红、商务藏青、学术论文、水墨国风、GitHub 文档等。</li>
         <li>边写边看：右侧编辑，左侧实时预览，两边滚动同步。</li>
-        <li>从飞书、Notion、Word 粘贴带格式的内容，会自动整理成 Markdown。</li>
+        <li>通过一个按钮导入 Markdown、飞书导出的 .md、Notion Markdown ZIP 或 Word .docx；也可从飞书、Notion、Word 复制粘贴。</li>
         <li>截图直接粘贴、图片直接拖入，自动压缩，不用找图床。</li>
         <li>连续放几张图，会自动排成两到三列的九宫格样式。</li>
         <li>文章自动缓存在本地浏览器，历史记录保留最近 3 篇。</li>
@@ -1918,7 +1978,7 @@
 
       <h2>怎么用</h2>
       <ol>
-        <li>在右侧编辑区写作，或者粘贴已有内容、上传 .md 文件。</li>
+        <li>在右侧编辑区写作、粘贴已有内容，或点击「导入文件」选择 MD、DOCX、Notion ZIP。</li>
         <li>在顶部样式栏点选一个样式，左侧预览马上切换。</li>
         <li>点「复制到公众号」，到公众号后台的图文编辑器里粘贴，排版就带过去了。</li>
       </ol>
@@ -1937,7 +1997,7 @@
       <h3>写到一半关掉网页，内容会丢吗？</h3>
       <p>当前编辑内容会自动保存在浏览器里，历史记录最多保留最近 3 篇。更换浏览器、设备或清除浏览器数据后可能无法找回，重要文章请另存。</p>
       <h3>支持哪些 Markdown 写法？</h3>
-      <p>常用的都支持：各级标题、加粗、斜体、链接、有序和无序列表、引用、代码块、表格、分割线和图片。也可以上传 .md 文件直接排版。</p>
+      <p>常用的都支持：各级标题、加粗、斜体、链接、有序和无序列表、引用、代码块、表格、分割线和图片。也可以导入 .md、Word .docx、Notion Markdown ZIP 文件。</p>
       <h3>用着有问题或想提建议，找谁？</h3>
       <p>微信联系 G哥：<strong>goan888888</strong>（请备注来意）；也可以在 X 或 Telegram 私信 @goan999999。</p>
 
@@ -1967,6 +2027,6 @@
        window.markdownit 和 Vue，届时还没定义会直接报错。defer 后四个脚本
        仍按文档顺序在 DOMContentLoaded 前依次执行，顺序跟原来一致。 -->
   <script src="styles.js?v=2" defer></script>
-  <script src="app.js?v=8" defer></script>
+  <script src="app.js?v=9" defer></script>
 </body>
 </html>
