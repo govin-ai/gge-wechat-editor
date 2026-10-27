@@ -84,6 +84,7 @@ python3 -m http.server 8080
 
 - X：[@goan999999](https://x.com/goan999999)
 - Telegram：@goan999999
+- 微信：goan888888（加好友请备注来意）
 - 合作/咨询见 [ggelabs.com](https://ggelabs.com/)
 
 合作 / 交流欢迎 DM。
