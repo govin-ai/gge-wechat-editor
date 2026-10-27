@@ -57,6 +57,10 @@ python3 -m http.server 8080
 
 纯静态站点，也可以部署到任意静态托管。部署到其他域名时，请同步修改 `index.html`、`guide.html`、`robots.txt` 和 `sitemap.xml` 中的站点网址。
 
+### 自有服务器访问统计
+
+`nginx-mp.conf` 为 `mp.ggelabs.com` 单独记录 HTTPS 访问日志；服务器每小时运行一次 `ops/mp-visit-stats.py`，生成需要 HTTP Basic Auth 才能查看的 `/stats/` 页面。统计按北京时间归属日期，仅保留每日汇总数字，不在报表中保存访客 IP。访客数由同一天的 IP 和 User-Agent 去重估算，并排除常见爬虫；与精确人数可能有偏差。日志启用前的访问无法从共享日志准确回溯。
+
 ### 使用步骤
 1. 在右侧输入或粘贴 Markdown 内容（左侧为实时预览）
 2. 选择喜欢的样式主题
