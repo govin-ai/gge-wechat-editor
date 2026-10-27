@@ -197,6 +197,67 @@
       background: var(--color-surface);
     }
 
+    html:not(.app-ready) #app { visibility: hidden; }
+    html.app-ready #app-skeleton { display: none; }
+    #app-skeleton {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--color-bg);
+    }
+    .skeleton-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      height: 80px;
+      padding: 0 28px;
+      background: #090717;
+      border-bottom: 2px solid var(--color-accent);
+    }
+    .skeleton-avatar { width: 42px; height: 42px; border-radius: 50%; }
+    .skeleton-title { width: 175px; height: 20px; }
+    .skeleton-header-links { display: flex; gap: 12px; margin-left: auto; }
+    .skeleton-header-links .skeleton-pill { width: 105px; height: 34px; }
+    .skeleton-styles { display: flex; align-items: center; gap: 12px; height: 82px; padding: 0 28px; background: white; overflow: hidden; }
+    .skeleton-pill { flex: 0 0 auto; width: 90px; height: 34px; border-radius: 8px; }
+    .skeleton-columns { display: grid; grid-template-columns: 1fr 1fr; flex: 1; min-height: 0; }
+    .skeleton-pane { min-width: 0; background: white; border-right: 1px solid var(--color-border); }
+    .skeleton-pane:last-child { background: var(--color-bg); border-right: 0; }
+    .skeleton-toolbar { height: 66px; padding: 16px 24px; border-bottom: 1px solid var(--color-border); }
+    .skeleton-toolbar .skeleton-line { width: 110px; height: 18px; }
+    .skeleton-content { padding: 38px 32px; }
+    .skeleton-line { height: 15px; margin: 0 0 19px; border-radius: 6px; }
+    .skeleton-line.wide { width: 84%; }
+    .skeleton-line.medium { width: 62%; }
+    .skeleton-line.short { width: 38%; }
+    .skeleton-block { width: 100%; height: 180px; border-radius: 12px; margin: 28px 0; }
+    .skeleton-avatar, .skeleton-title, .skeleton-pill, .skeleton-line, .skeleton-block {
+      background: linear-gradient(110deg, #e8e5f3 8%, #f7f5fc 22%, #e8e5f3 38%);
+      background-size: 220% 100%;
+      animation: skeleton-shimmer 1.8s linear infinite;
+    }
+    .skeleton-header .skeleton-avatar, .skeleton-header .skeleton-title, .skeleton-header .skeleton-pill {
+      background-image: linear-gradient(110deg, #27213f 8%, #403762 22%, #27213f 38%);
+    }
+    @keyframes skeleton-shimmer { to { background-position-x: -220%; } }
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton-avatar, .skeleton-title, .skeleton-pill, .skeleton-line, .skeleton-block { animation: none; }
+    }
+    .skeleton-status { margin: 0; padding: 0 28px 18px; color: var(--color-secondary); font-size: 14px; }
+    .skeleton-retry { display: inline-block; margin-left: 10px; color: var(--color-accent); }
+    .skeleton-retry[hidden] { display: none; }
+    @media (max-width: 768px) {
+      .skeleton-header { height: 64px; padding: 0 16px; }
+      .skeleton-header-links { display: none; }
+      .skeleton-styles { height: 66px; padding: 0 16px; }
+      .skeleton-columns { grid-template-columns: 1fr; grid-template-rows: 45% 55%; }
+      .skeleton-pane { border-right: 0; border-bottom: 1px solid var(--color-border); }
+      .skeleton-content { padding: 24px 18px; }
+    }
+
     /* 顶部栏 */
     .header {
       grid-column: 1 / -1;
@@ -480,52 +541,6 @@
 
     .upload-label:has(input:disabled) { opacity: 0.55; cursor: wait; }
 
-    .import-picker-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1100;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-      background: rgba(5, 3, 15, 0.62);
-    }
-    .import-picker {
-      width: min(100%, 520px);
-      max-height: min(78vh, 620px);
-      display: flex;
-      flex-direction: column;
-      padding: 24px;
-      border: 1px solid var(--color-border);
-      border-radius: 16px;
-      background: var(--color-surface);
-      box-shadow: 0 24px 70px rgba(5, 3, 15, 0.3);
-    }
-    .import-picker h2 { margin: 0 0 6px; font-size: 20px; }
-    .import-picker p { margin: 0 0 16px; color: var(--color-secondary); font-size: 14px; }
-    .import-picker-list { display: grid; gap: 8px; overflow: auto; }
-    .import-picker-list button {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--color-border);
-      border-radius: 9px;
-      background: var(--color-bg);
-      color: var(--color-primary);
-      text-align: left;
-      overflow-wrap: anywhere;
-      cursor: pointer;
-    }
-    .import-picker-list button:hover { border-color: var(--color-accent); background: var(--color-accent-soft); }
-    .import-picker-list button:disabled { opacity: 0.55; cursor: wait; }
-    .import-picker-cancel {
-      align-self: flex-end;
-      margin-top: 16px;
-      padding: 8px 14px;
-      border: 0;
-      border-radius: 8px;
-      background: var(--color-accent-soft);
-      color: var(--color-accent);
-      cursor: pointer;
-    }
 
     .upload-hints {
       display: flex;
@@ -1642,7 +1657,27 @@
   </style>
 </head>
 <body>
-  <div id="app">
+  <div id="app-skeleton" role="status" aria-live="polite">
+    <div class="skeleton-header">
+      <div class="skeleton-avatar"></div><div class="skeleton-title"></div>
+      <div class="skeleton-header-links"><div class="skeleton-pill"></div><div class="skeleton-pill"></div><div class="skeleton-pill"></div></div>
+    </div>
+    <div class="skeleton-styles"><div class="skeleton-pill"></div><div class="skeleton-pill"></div><div class="skeleton-pill"></div><div class="skeleton-pill"></div><div class="skeleton-pill"></div></div>
+    <div class="skeleton-columns">
+      <div class="skeleton-pane"><div class="skeleton-toolbar"><div class="skeleton-line"></div></div><div class="skeleton-content"><div class="skeleton-line medium"></div><div class="skeleton-line wide"></div><div class="skeleton-line short"></div><div class="skeleton-block"></div><div class="skeleton-line wide"></div></div></div>
+      <div class="skeleton-pane"><div class="skeleton-toolbar"><div class="skeleton-line"></div></div><div class="skeleton-content"><div class="skeleton-line wide"></div><div class="skeleton-line medium"></div><div class="skeleton-line wide"></div><div class="skeleton-line short"></div></div></div>
+    </div>
+    <p class="skeleton-status"><span id="skeleton-status-text">正在加载排版工具…</span><a id="skeleton-retry" class="skeleton-retry" href="" hidden>刷新重试</a></p>
+  </div>
+  <script>
+    setTimeout(function () {
+      if (!document.documentElement.classList.contains('app-ready')) {
+        document.getElementById('skeleton-status-text').textContent = '加载较慢，请刷新页面重试';
+        document.getElementById('skeleton-retry').hidden = false;
+      }
+    }, 12000);
+  </script>
+  <div id="app" inert aria-hidden="true">
     <header class="header">
       <a class="logo" href="https://ggelabs.com/" aria-label="G哥主页">
         <img class="logo-avatar" src="assets/avatar.jpg" alt="" width="34" height="34">
@@ -1937,17 +1972,6 @@
     <!-- 侧边栏遮罩层 -->
     <div class="history-overlay" :class="{ visible: showHistoryPanel }" @click="toggleHistoryPanel"></div>
 
-    <div v-if="importOptions.length" class="import-picker-overlay" @keydown.esc="cancelNotionImport">
-      <section class="import-picker" role="dialog" aria-modal="true" aria-labelledby="import-picker-title">
-        <h2 id="import-picker-title">选择要导入的 Notion 页面</h2>
-        <p>压缩包中有 {{ importOptions.length }} 篇页面，本次导入其中一篇</p>
-        <div class="import-picker-list">
-          <button v-for="(path, index) in importOptions" :key="path" :ref="index === 0 ? 'importFirstPage' : null" type="button" :disabled="importBusy" @click="selectNotionPage(path)">{{ path }}</button>
-        </div>
-        <button type="button" class="import-picker-cancel" :disabled="importBusy" @click="cancelNotionImport">取消</button>
-      </section>
-    </div>
-
     <!-- Toast 提示 -->
     <div v-if="toast.show" class="toast" :class="toast.type">
       {{ toast.message }}
@@ -2027,6 +2051,6 @@
        window.markdownit 和 Vue，届时还没定义会直接报错。defer 后四个脚本
        仍按文档顺序在 DOMContentLoaded 前依次执行，顺序跟原来一致。 -->
   <script src="styles.js?v=2" defer></script>
-  <script src="app.js?v=9" defer></script>
+  <script src="app.js?v=10" defer></script>
 </body>
 </html>

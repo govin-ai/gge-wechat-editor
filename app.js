@@ -591,8 +591,7 @@ const editorApp = createApp({
       articleHistory: [],           // 历史文章列表
       showHistoryPanel: false,      // 侧边栏显示状态
       currentArticleId: null,       // 当前编辑的文章ID（用于防止重复保存）
-      importBusy: false,
-      importOptions: []             // Notion ZIP 包含多篇文章时供用户选择
+      importBusy: false
     };
   },
 
@@ -676,9 +675,20 @@ const editorApp = createApp({
     this.md = md;
 
     // 手动触发一次渲染（确保初始内容显示）
-    this.$nextTick(() => {
-      this.renderMarkdown();
-      this.initScrollSync();
+    this.$nextTick(async () => {
+      try {
+        await this.renderMarkdown();
+        this.initScrollSync();
+      } catch (error) {
+        console.error('初始化预览失败:', error);
+      } finally {
+        requestAnimationFrame(() => {
+          const root = document.getElementById('app');
+          root.removeAttribute('inert');
+          root.removeAttribute('aria-hidden');
+          document.documentElement.classList.add('app-ready');
+        });
+      }
     });
   },
 
@@ -892,7 +902,6 @@ const markdown = \`![图片](img://\${imageId})\`;
       }
 
       this.importBusy = true;
-      this.importOptions = [];
       this._importZip = null;
       try {
         const extension = file.name.split('.').pop().toLowerCase();
@@ -916,13 +925,15 @@ const markdown = \`![图片](img://\${imageId})\`;
       }
     },
 
-    finishFileImport(markdown, missingImages = 0) {
+    finishFileImport(markdown, missingImages = 0, extraPages = 0) {
       if (!markdown || !markdown.trim()) throw new Error('文件中没有可导入的正文');
       this.currentArticleId = null;
       this.markdownInput = markdown;
-      this.showToast(missingImages
-        ? `正文已导入，${missingImages} 张图片未找到`
-        : '文件已导入，可以预览和编辑', missingImages ? 'warning' : 'success');
+      const message = extraPages
+        ? `已导入主页面，ZIP 中另有 ${extraPages} 篇`
+        : missingImages ? `正文已导入，${missingImages} 张图片未找到`
+          : '文件已导入，可以预览和编辑';
+      this.showToast(message, missingImages || extraPages ? 'warning' : 'success');
     },
 
     async storeImportedImage(blob, name) {
@@ -981,37 +992,12 @@ const markdown = \`![图片](img://\${imageId})\`;
       if (pages.length > 100) throw new Error('ZIP 页面超过 100 篇，请分别导出');
 
       this._importZip = zip;
-      if (pages.length === 1) {
-        try {
-          const result = await this.readNotionPage(pages[0]);
-          this.finishFileImport(result.markdown, result.missingImages);
-        } finally {
-          this._importZip = null;
-        }
-      } else {
-        this.importOptions = pages;
-        this.$nextTick(() => this.$refs.importFirstPage?.focus());
-      }
-    },
-
-    async selectNotionPage(path) {
-      if (this.importBusy || !this._importZip || !this.importOptions.includes(path)) return;
-      this.importBusy = true;
       try {
-        const result = await this.readNotionPage(path);
-        this.finishFileImport(result.markdown, result.missingImages);
-        this.cancelNotionImport();
-      } catch (error) {
-        console.error('导入 Notion 页面失败:', error);
-        this.showToast('导入失败：' + error.message, 'error');
+        const result = await this.readNotionPage(pages[0]);
+        this.finishFileImport(result.markdown, result.missingImages, pages.length - 1);
       } finally {
-        this.importBusy = false;
+        this._importZip = null;
       }
-    },
-
-    cancelNotionImport() {
-      this.importOptions = [];
-      this._importZip = null;
     },
 
     resolveNotionAsset(pagePath, link) {
