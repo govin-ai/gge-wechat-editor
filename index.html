@@ -98,7 +98,7 @@
       "name": "写到一半关掉网页，内容会丢吗？",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "不会。内容会自动缓存在你当前的浏览器里，下次打开还在，写过的文章也能在历史记录里找回。不过换浏览器、换电脑或清除浏览器数据后就找不回了，重要文章请自己另存一份。"
+        "text": "当前编辑内容会自动保存在浏览器里，历史记录最多保留最近 3 篇。更换浏览器、设备或清除浏览器数据后可能无法找回，重要文章请另存。"
       }
     },
     {
@@ -1745,7 +1745,7 @@
             </button>
             <button
               class="save-btn"
-              @click="saveToHistory"
+              @click="saveToHistory()"
               title="缓存到历史记录"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1841,7 +1841,7 @@
       <div class="history-header">
         <div class="history-header-left">
           <h3>历史记录</h3>
-          <span class="history-count">{{ articleHistory.length }}/20</span>
+          <span class="history-count">{{ articleHistory.length }}/3</span>
         </div>
         <button class="history-close-btn" @click="toggleHistoryPanel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1880,7 +1880,7 @@
             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
           <p>暂无历史记录</p>
-          <span>复制文章或点击缓存按钮后自动记录</span>
+          <span>复制文章或点击缓存后记录，最多保留最近 3 篇</span>
         </div>
       </div>
     </aside>
@@ -1913,7 +1913,7 @@
         <li>从飞书、Notion、Word 粘贴带格式的内容，会自动整理成 Markdown。</li>
         <li>截图直接粘贴、图片直接拖入，自动压缩，不用找图床。</li>
         <li>连续放几张图，会自动排成两到三列的九宫格样式。</li>
-        <li>文章自动缓存在本地浏览器，随时从历史记录里打开继续写。</li>
+        <li>文章自动缓存在本地浏览器，历史记录保留最近 3 篇。</li>
       </ul>
 
       <h2>怎么用</h2>
@@ -1935,7 +1935,7 @@
       <h3>GIF 动图能一起复制过去吗？</h3>
       <p>GIF 没法直接带进公众号。默认情况下，复制时 GIF 的位置会留一段提示文字，到公众号编辑器里把动图重新上传到这个位置即可。</p>
       <h3>写到一半关掉网页，内容会丢吗？</h3>
-      <p>不会。内容会自动缓存在你当前的浏览器里，下次打开还在，写过的文章也能在历史记录里找回。不过换浏览器、换电脑或清除浏览器数据后就找不回了，重要文章请自己另存一份。</p>
+      <p>当前编辑内容会自动保存在浏览器里，历史记录最多保留最近 3 篇。更换浏览器、设备或清除浏览器数据后可能无法找回，重要文章请另存。</p>
       <h3>支持哪些 Markdown 写法？</h3>
       <p>常用的都支持：各级标题、加粗、斜体、链接、有序和无序列表、引用、代码块、表格、分割线和图片。也可以上传 .md 文件直接排版。</p>
       <h3>用着有问题或想提建议，找谁？</h3>
@@ -1967,6 +1967,6 @@
        window.markdownit 和 Vue，届时还没定义会直接报错。defer 后四个脚本
        仍按文档顺序在 DOMContentLoaded 前依次执行，顺序跟原来一致。 -->
   <script src="styles.js?v=2" defer></script>
-  <script src="app.js?v=6" defer></script>
+  <script src="app.js?v=7" defer></script>
 </body>
 </html>

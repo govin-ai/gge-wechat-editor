@@ -1825,10 +1825,10 @@ const markdown = \`![图片](img://\${imageId})\`;
           await navigator.clipboard.write([clipboardItem]);
 
           this.copySuccess = true;
-          this.showToast('复制成功', 'success');
+          this.showToast('已复制，去公众号后台粘贴即可', 'success');
 
           // 自动保存到历史记录
-          this.saveToHistory();
+          this.saveToHistory(true);
           this.trackCopy('wechat');
 
           setTimeout(() => {
@@ -1956,8 +1956,8 @@ const markdown = \`![图片](img://\${imageId})\`;
 
         if (success) {
           this.copySuccess = true;
-          this.showToast('复制成功（降级模式）', 'success');
-          this.saveToHistory();
+          this.showToast('已复制，去公众号后台粘贴即可', 'success');
+          this.saveToHistory(true);
           this.trackCopy('wechat');
           setTimeout(() => { this.copySuccess = false; }, 2000);
         } else {
@@ -3113,10 +3113,10 @@ const markdown = \`![图片](img://\${imageId})\`;
     trackCopy(target) {
     },
 
-    saveToHistory() {
+    saveToHistory(silent = false) {
       const content = this.markdownInput;
       if (!content || !content.trim()) {
-        this.showToast('内容为空，无法缓存', 'error');
+        if (!silent) this.showToast('内容为空，无法缓存', 'error');
         return;
       }
 
@@ -3141,7 +3141,7 @@ const markdown = \`![图片](img://\${imageId})\`;
           this.articleHistory.unshift(article);
 
           this.saveArticleHistory();
-          this.showToast('已更新历史记录', 'success');
+          if (!silent) this.showToast('已更新历史记录', 'success');
           return;
         }
       }
@@ -3163,14 +3163,14 @@ const markdown = \`![图片](img://\${imageId})\`;
       // 设置为当前文章
       this.currentArticleId = newArticleId;
 
-      // 限制最多 20 篇
-      if (this.articleHistory.length > 20) {
-        this.articleHistory = this.articleHistory.slice(0, 20);
+      // 仅保留最近 3 篇，新增时移除最旧的一篇
+      if (this.articleHistory.length > 3) {
+        this.articleHistory = this.articleHistory.slice(0, 3);
       }
 
       // 保存到 localStorage
       this.saveArticleHistory();
-      this.showToast('已缓存到历史记录', 'success');
+      if (!silent) this.showToast('已缓存到历史记录', 'success');
     },
 
     // 从历史记录加载文章
@@ -3216,7 +3216,8 @@ const markdown = \`![图片](img://\${imageId})\`;
         if (saved) {
           const data = JSON.parse(saved);
           if (data && Array.isArray(data.articles)) {
-            this.articleHistory = data.articles;
+            this.articleHistory = data.articles.slice(0, 3);
+            if (data.articles.length > 3) this.saveArticleHistory();
           }
         }
       } catch (error) {
