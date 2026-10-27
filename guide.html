@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>使用说明：Markdown 公众号排版教程 | G哥公众号排版</title>
+  <meta name="description" content="G哥公众号排版使用说明：导入 Markdown、选择样式、预览并复制到微信公众号后台。了解图片粘贴、GIF、自动缓存和常见问题。">
+  <link rel="canonical" href="https://mp.ggelabs.com/guide.html">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="G哥公众号排版使用说明">
+  <meta property="og:description" content="从 Markdown 到公众号文章：导入内容、选择样式、预览与复制。">
+  <meta property="og:url" content="https://mp.ggelabs.com/guide.html">
+  <meta property="og:locale" content="zh_CN">
+  <style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f5f4fb; color: #171427; line-height: 1.75; }
+    a { color: #5a3de0; }
+    .topbar { background: #05030f; border-bottom: 2px solid #7254ed; }
+    .topbar__inner { max-width: 880px; margin: auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; text-decoration: none; }
+    .brand img { width: 34px; height: 34px; border-radius: 50%; }
+    .back { padding: 7px 14px; border: 1px solid #625e77; border-radius: 999px; color: #fff; text-decoration: none; white-space: nowrap; }
+    .back:hover { border-color: #ab5df1; }
+    main { max-width: 880px; margin: 28px auto; padding: 36px clamp(20px, 5vw, 52px); background: #fff; border: 1px solid #e0def0; border-radius: 16px; }
+    h1 { margin: 0 0 12px; font-size: clamp(26px, 4vw, 36px); line-height: 1.35; }
+    h2 { margin: 36px 0 12px; font-size: 22px; }
+    h3 { margin: 22px 0 6px; font-size: 17px; }
+    p, li { color: #5c5b75; }
+    ol, ul { padding-left: 1.5em; }
+    li { margin: 8px 0; }
+    .lead { font-size: 17px; }
+    .cta { display: inline-block; margin: 12px 0 4px; padding: 10px 18px; border-radius: 999px; background: linear-gradient(90deg, #3d5af1, #ab5df1); color: #fff; font-weight: 700; text-decoration: none; }
+    .credit { display: grid; gap: 12px; margin-top: 40px; padding: 20px 22px; border: 1px solid #e0def0; border-radius: 14px; background: #f5f4fb; font-size: 14px; }
+    .credit p { margin: 0; line-height: 1.7; }
+    .credit a { font-weight: 600; text-decoration: none; }
+    .credit a:hover { text-decoration: underline; }
+    @media (max-width: 640px) { main { margin: 0; border: 0; border-radius: 0; } .topbar__inner { padding: 12px 16px; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" href="https://mp.ggelabs.com/"><img src="assets/avatar.jpg" alt="" width="34" height="34">G哥公众号排版</a>
+      <a class="back" href="https://mp.ggelabs.com/">打开排版工具 ↗</a>
+    </div>
+  </header>
+  <main>
+    <h1>G哥公众号排版使用说明</h1>
+    <p class="lead">在右边写 Markdown，左边实时预览。选好样式后复制，再粘贴到微信公众号后台即可。工具免费使用，无需注册。</p>
+    <a class="cta" href="https://mp.ggelabs.com/">开始排版 ↗</a>
+
+    <h2>三步完成公众号排版</h2>
+    <ol>
+      <li>在右侧编辑区写作、粘贴已有内容，或上传 <code>.md</code> 文件。</li>
+      <li>在顶部选择样式，左侧会立即显示文章效果。可以收藏常用样式。</li>
+      <li>点击「复制到公众号」，打开微信公众号图文编辑器，直接粘贴。</li>
+    </ol>
+
+    <h2>支持的内容</h2>
+    <ul>
+      <li>Markdown 标题、加粗、链接、列表、引用、代码块、表格和图片。</li>
+      <li>从飞书、Notion、Word 粘贴带格式的文字，并转换成 Markdown。</li>
+      <li>粘贴截图或拖入图片，工具会自动压缩；多张连续图片可排成网格。</li>
+      <li>13 套排版样式，包括 G哥风、政务红、商务藏青、学术论文、水墨国风等。</li>
+    </ul>
+
+    <h2>常见问题</h2>
+    <h3>复制到公众号后样式没了？</h3>
+    <p>建议在电脑浏览器中操作。在公众号后台的图文编辑器里直接粘贴，不要选择「粘贴为纯文本」。如果原本已有内容，可以先清空编辑区再粘贴。</p>
+    <h3>图片需要图床吗？</h3>
+    <p>不需要。图片可以直接拖入，截图也可以直接粘贴。复制排版内容时，图片会一起复制。</p>
+    <h3>GIF 动图怎么处理？</h3>
+    <p>GIF 不能直接随排版内容带入公众号。复制后在提示位置重新上传 GIF。</p>
+    <h3>内容会自动缓存吗？</h3>
+    <p>会缓存在当前浏览器中，也能从历史记录继续编辑。更换浏览器、设备或清除浏览器数据后可能无法找回，重要文章请另存。</p>
+    <h3>遇到问题或想提建议？</h3>
+    <p>微信联系 G哥：<strong>goan888888</strong>，请备注来意。</p>
+
+    <div class="credit" aria-label="制作与合作信息">
+      <p>由 <a href="https://x.com/goan999999" target="_blank" rel="noopener noreferrer">G哥（@goan999999）</a> 制作。</p>
+      <p>合作/咨询见 <a href="https://ggelabs.com/" target="_blank" rel="noopener noreferrer">ggelabs.com</a></p>
+    </div>
+  </main>
+</body>
+</html>
