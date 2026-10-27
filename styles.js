@@ -29,6 +29,35 @@ const STYLES = {
     }
   },
 
+  'gge-violet-editorial': {
+    name: 'G哥·紫墨长文',
+    styles: {
+      container: 'max-width: 700px; margin: 0 auto; padding: 18px 16px 40px; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; font-size: 16px; line-height: 1.95 !important; letter-spacing: 0.02em; color: #353442 !important; background-color: #fff !important; overflow-wrap: break-word;',
+      h1: 'margin: 18px 0 32px; padding: 0 0 18px; border-bottom: 2px solid #7358bd; font-size: 27px; font-weight: 800; line-height: 1.42 !important; letter-spacing: 0.01em; text-align: left; color: #211e2d !important;',
+      h2: 'margin: 46px 0 18px; padding: 2px 0 2px 15px; border-left: 3px solid #7358bd; font-size: 21px; font-weight: 750; line-height: 1.45 !important; color: #282331 !important;',
+      h3: 'margin: 34px 0 14px; padding: 0 0 8px; border-bottom: 1px solid #e6e0f1; font-size: 18px; font-weight: 700; line-height: 1.5 !important; color: #513b83 !important;',
+      h4: 'margin: 27px 0 11px; font-size: 17px; font-weight: 700; line-height: 1.5 !important; color: #343044 !important;',
+      h5: 'margin: 24px 0 10px; font-size: 16px; font-weight: 700; line-height: 1.5 !important; color: #513b83 !important;',
+      h6: 'margin: 22px 0 9px; font-size: 15px; font-weight: 700; line-height: 1.5 !important; color: #777080 !important;',
+      p: 'margin: 0 0 19px !important; line-height: 1.95 !important; color: #353442 !important;',
+      strong: 'font-weight: 750; color: #48326f !important;',
+      em: 'font-style: italic; color: #65567a !important;',
+      a: 'color: #6246a5 !important; text-decoration: underline; text-decoration-color: #b9a8da; text-underline-offset: 3px;',
+      ul: 'margin: 18px 0 22px; padding-left: 25px;',
+      ol: 'margin: 18px 0 22px; padding-left: 25px;',
+      li: 'margin: 7px 0; line-height: 1.85 !important; color: #353442 !important;',
+      blockquote: 'margin: 28px 0; padding: 4px 0 4px 18px; border-left: 2px solid #9b85c8; background-color: #fff !important; color: #625b6d !important; line-height: 1.85 !important;',
+      code: 'font-family: Menlo, Consolas, monospace; font-size: 14px; padding: 2px 5px; background-color: #f3f0f8 !important; color: #513b83 !important; border-radius: 3px;',
+      pre: 'margin: 24px 0; padding: 17px; background-color: #24212e !important; border-radius: 6px; overflow-x: auto; line-height: 1.65 !important;',
+      hr: 'margin: 42px auto; width: 28%; border: none; border-top: 1px solid #c7b9df;',
+      img: 'max-width: 100%; max-height: 600px !important; height: auto; display: block; margin: 28px auto; padding: 3px; box-sizing: border-box; border: 1px solid #e5e0eb; border-radius: 5px;',
+      table: 'width: 100%; margin: 24px 0; border-collapse: collapse; font-size: 14px;',
+      th: 'padding: 10px 12px; border-bottom: 2px solid #7358bd; font-weight: 700; text-align: left; color: #282331 !important; background-color: #fff !important;',
+      td: 'padding: 10px 12px; border-bottom: 1px solid #e6e0f1; color: #353442 !important;',
+      tr: 'border-bottom: 1px solid #e6e0f1;'
+    }
+  },
+
   'mint-fresh': {
     name: '薄荷清新',
     styles: {
