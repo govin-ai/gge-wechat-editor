@@ -3123,8 +3123,8 @@ const markdown = \`![图片](img://\${imageId})\`;
       const title = this.extractTitle(content);
       const now = Date.now();
 
-      // 如果有当前文章ID，直接更新该文章
-      if (this.currentArticleId) {
+      // 复制时更新当前快照；手动点击“缓存”则始终创建一份新快照
+      if (silent && this.currentArticleId) {
         const existingIndex = this.articleHistory.findIndex(
           article => article.id === this.currentArticleId
         );

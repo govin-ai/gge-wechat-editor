@@ -1746,7 +1746,7 @@
             <button
               class="save-btn"
               @click="saveToHistory()"
-              title="缓存到历史记录"
+              title="缓存当前内容，最多保留 3 份"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
@@ -1967,6 +1967,6 @@
        window.markdownit 和 Vue，届时还没定义会直接报错。defer 后四个脚本
        仍按文档顺序在 DOMContentLoaded 前依次执行，顺序跟原来一致。 -->
   <script src="styles.js?v=2" defer></script>
-  <script src="app.js?v=7" defer></script>
+  <script src="app.js?v=8" defer></script>
 </body>
 </html>
